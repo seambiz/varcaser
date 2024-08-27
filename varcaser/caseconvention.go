@@ -25,6 +25,47 @@ type JoinStyle struct {
 	Split func(string) []string
 }
 
+var commonInitialisms = []string{
+	"ACL",
+	"API",
+	"ASCII",
+	"CPU",
+	"CSS",
+	"DNS",
+	"EOF",
+	"GUID",
+	"HTML",
+	"HTTP",
+	"HTTPS",
+	"ID",
+	"IP",
+	"JSON",
+	"LHS",
+	"QPS",
+	"RAM",
+	"RHS",
+	"RPC",
+	"SLA",
+	"SMTP",
+	"SQL",
+	"SSH",
+	"TCP",
+	"TLS",
+	"TTL",
+	"UDP",
+	"UI",
+	"UID",
+	"UUID",
+	"URI",
+	"URL",
+	"UTF8",
+	"VM",
+	"XML",
+	"XMPP",
+	"XSRF",
+	"XSS",
+}
+
 // SimpleJoinStyle creates a JoinStyle that just splits and joins by a
 // separator.
 func SimpleJoinStyle(sep string) JoinStyle {
@@ -42,8 +83,35 @@ func SimpleJoinStyle(sep string) JoinStyle {
 // acronyms together.
 var camelJoinStyle = JoinStyle{
 	Join: func(components []string) string {
-		return strings.Join(components, "")
+		s := strings.Join(components, "")
 
+		// initialisms
+		{
+			upper := strings.ToUpper(s)
+			// replace intialims at the beginning
+			for _, initialism := range commonInitialisms {
+				if strings.HasPrefix(upper, initialism) {
+					s = strings.Replace(s, s[0:len(initialism)], initialism, 1)
+					break
+				}
+			}
+
+			// replace initialisms at the end
+			for _, initialism := range commonInitialisms {
+				if strings.HasSuffix(upper, initialism) {
+					index := strings.LastIndex(upper, initialism)
+
+					buf := strings.Builder{}
+					buf.Grow(len(s))
+					buf.WriteString(s[0:index])
+					buf.WriteString(initialism)
+					s = buf.String()
+					break
+				}
+			}
+		}
+
+		return s
 	},
 	Split: func(s string) (components []string) {
 		// NOTE(danver): While I keep finding new edge cases, I'll want
@@ -80,7 +148,6 @@ var camelJoinStyle = JoinStyle{
 				current = []rune{c}
 				wasPreviousUpper = true
 			} else if !wasPreviousUpper && !unicode.IsUpper(c) {
-
 				// If the previous rune was not uppercase, and
 				// this one is not, just add to this component.
 

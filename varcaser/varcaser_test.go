@@ -23,7 +23,6 @@ func TestCamelSplitComplex(t *testing.T) {
 	expected := []string{"async", "HTTP", "Router4"}
 	specimen := camelJoinStyle.Split("asyncHTTPRouter4")
 	AssertEqual(specimen, expected, t)
-
 }
 
 func TestCamelSplitMixedUp(t *testing.T) {
@@ -95,6 +94,15 @@ func TestCaserCamelToCamelLoseCapitals(t *testing.T) {
 
 	specimen := c.String("AsyncHTTPRequest")
 	expected := "AsyncHttpRequest"
+	AssertEqual(specimen, expected, t)
+}
+
+// AsyncHTTPRequest -> AsyncHttpRequest
+func TestCaserCamelToCamelInitialisms(t *testing.T) {
+	c := Caser{From: UpperCamelCase, To: UpperCamelCase}
+
+	specimen := c.String("OneByID")
+	expected := "OneByID"
 	AssertEqual(specimen, expected, t)
 }
 
